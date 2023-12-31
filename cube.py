@@ -262,6 +262,10 @@ class Cube():
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
+
+        ax.set_xlim(-4,4)
+        ax.set_ylim(-4,4)
+        ax.set_zlim(-4,4)
         
         plt.show()
 
