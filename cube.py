@@ -161,7 +161,65 @@ class Cube():
         self.rotate(face, clockwise)
         if double_rotation:
             self.rotate(face, clockwise)
-
+    
+    def num_correct_facelets(self):
+        n = -6
+        
+        for f in range(6):
+            n += np.sum(self.facelets[f] == f)
+        
+        return n
+    
+    def num_correct_sides(self):
+        n = 0
+        for f in range(6):
+            n += (self.facelets[f] == f).all()
+        
+        return n
+    
+    def rotate_code_get_reward(self, rotation_code):
+        cur_correct_facelets = self.num_correct_facelets()
+        cur_correct_sides = self.num_correct_sides()
+        
+        self.rotate_code(rotation_code)
+        
+        next_correct_facelets = self.num_correct_facelets()
+        next_correct_sides = self.num_correct_sides()
+        
+        if self.is_solved():
+            # print("REACHED SOLVED STATE")
+            return 100
+            
+        reward = -0.1
+        reward += next_correct_facelets - cur_correct_facelets
+        reward += (next_correct_sides - cur_correct_sides) * 10
+        
+        
+        return reward
+    
+    def scramble(self, num_rotations = 20):
+        prev_face = None
+        scramble_str = ''
+        for i in range(num_rotations):
+            while True:
+                face = np.random.choice(list(self.face2num.keys()))
+                if face != prev_face:
+                    break
+            rotation_type = np.random.choice(['', '\'', '2'])
+            self.rotate_code(face + rotation_type)
+            scramble_str += face + rotation_type + ' '
+            prev_face = face
+        return scramble_str
+    
+    def is_solved_state(self, state):
+        for f in range(6):
+            if not np.all(state[f] == f):
+                return False
+        return True
+    
+    def is_solved(self):
+        return self.is_solved_state(self.facelets)
+        
     def draw(self):
         fig = plt.figure()
         ax = fig.add_subplot(111, projection = '3d')
@@ -208,11 +266,13 @@ class Cube():
         plt.show()
 
 if __name__ == '__main__':
+    # Test
     rotation_str = input()
-
     cube = Cube()
 
-    for rot_code in rotation_str.split(' '):
-        cube.rotate_code(rot_code)
-
+    if rotation_str != '':
+        for rot_code in rotation_str.split(' '):
+            cube.rotate_code(rot_code)
+    else:
+        cube.scramble(20)
     cube.draw()
