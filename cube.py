@@ -48,9 +48,138 @@ class Cube():
         
         for i in range(6):
             self.facelets[i] = i
-    
-    def rotate(self, face, clockwise):
-        f = self.facelets
+        
+        # A more compact format like in the DeepCube paper is also employed.
+        # Therefore, the tracked stickers are selected as follows (marked with numbers):
+        #
+        #           -- -- --
+        #           0  -- 1
+        #           -- -- --
+        #
+        #           2  3  4
+        #           5  -- 6 
+        #           7  8  9
+        #
+        # -- -- --  -- -- --  -- -- --
+        # -- -- --  10 -- 11  -- -- --
+        # -- -- --  -- -- --  -- -- --
+        #        
+        #           12 13 14
+        #           15 -- 16
+        #           17 18 19
+        #
+        self.tracked = np.zeros((6, 3, 3), dtype = np.int8) - 1
+        self.tracked[self.face2num['B'], 1, 0] = 0
+        self.tracked[self.face2num['B'], 1, 2] = 1
+        self.tracked[self.face2num['U'], 0, 0] = 2
+        self.tracked[self.face2num['U'], 0, 1] = 3
+        self.tracked[self.face2num['U'], 0, 2] = 4
+        self.tracked[self.face2num['U'], 1, 0] = 5
+        self.tracked[self.face2num['U'], 1, 2] = 6
+        self.tracked[self.face2num['U'], 2, 0] = 7
+        self.tracked[self.face2num['U'], 2, 1] = 8
+        self.tracked[self.face2num['U'], 2, 2] = 9
+        self.tracked[self.face2num['F'], 1, 0] = 10
+        self.tracked[self.face2num['F'], 1, 2] = 11
+        self.tracked[self.face2num['D'], 0, 0] = 12
+        self.tracked[self.face2num['D'], 0, 1] = 13
+        self.tracked[self.face2num['D'], 0, 2] = 14
+        self.tracked[self.face2num['D'], 1, 0] = 15
+        self.tracked[self.face2num['D'], 1, 2] = 16
+        self.tracked[self.face2num['D'], 2, 0] = 17
+        self.tracked[self.face2num['D'], 2, 1] = 18
+        self.tracked[self.face2num['D'], 2, 2] = 19
+
+        # The edge locations are numbered as follows:
+        #
+        #           -- 0  --
+        #           1  -- 2
+        #           -- 3  --
+        #
+        #           -- 4  --
+        #           5  -- 6
+        #           -- 7  --
+        #
+        # -- 8  --  -- 12 --  -- 16 --
+        # 9  -- 10  13 -- 14  17 -- 18
+        # -- 11 --  -- 15 --  -- 19 --
+        #        
+        #           -- 20 --
+        #           21 -- 22
+        #           -- 23 --
+        #
+        self.edges = np.zeros((6, 3, 3), dtype = np.int8) - 1
+        self.edges[self.face2num['B'], 0, 1] = 0
+        self.edges[self.face2num['B'], 1, 0] = 1
+        self.edges[self.face2num['B'], 1, 2] = 2
+        self.edges[self.face2num['B'], 2, 1] = 3
+        self.edges[self.face2num['U'], 0, 1] = 4
+        self.edges[self.face2num['U'], 1, 0] = 5
+        self.edges[self.face2num['U'], 1, 2] = 6
+        self.edges[self.face2num['U'], 2, 1] = 7
+        self.edges[self.face2num['L'], 0, 1] = 8
+        self.edges[self.face2num['L'], 1, 0] = 9
+        self.edges[self.face2num['L'], 1, 2] = 10
+        self.edges[self.face2num['L'], 2, 1] = 11
+        self.edges[self.face2num['F'], 0, 1] = 12
+        self.edges[self.face2num['F'], 1, 0] = 13
+        self.edges[self.face2num['F'], 1, 2] = 14
+        self.edges[self.face2num['F'], 2, 1] = 15
+        self.edges[self.face2num['R'], 0, 1] = 16
+        self.edges[self.face2num['R'], 1, 0] = 17
+        self.edges[self.face2num['R'], 1, 2] = 18
+        self.edges[self.face2num['R'], 2, 1] = 19
+        self.edges[self.face2num['D'], 0, 1] = 20
+        self.edges[self.face2num['D'], 1, 0] = 21
+        self.edges[self.face2num['D'], 1, 2] = 22
+        self.edges[self.face2num['D'], 2, 1] = 23
+
+        # The corner locations are numbered as follows:
+        #
+        #           0  -- 1
+        #           -- -- --
+        #           2  -- 3
+        #
+        #           4  -- 5
+        #           -- -- --
+        #           6  -- 7
+        #
+        # 8  -- 9   12 -- 13  16 -- 17
+        # -- -- --  -- -- --  -- -- --
+        # 10 -- 11  14 -- 15  18 -- 19
+        #        
+        #           20 -- 21
+        #           -- -- --
+        #           22 -- 23
+        #
+        self.corners = np.zeros((6, 3, 3), dtype = np.int8)
+        self.corners[self.face2num['B'], 0, 0] = 0
+        self.corners[self.face2num['B'], 0, 2] = 1
+        self.corners[self.face2num['B'], 2, 0] = 2
+        self.corners[self.face2num['B'], 2, 2] = 3
+        self.corners[self.face2num['U'], 0, 0] = 4
+        self.corners[self.face2num['U'], 0, 2] = 5
+        self.corners[self.face2num['U'], 2, 0] = 6
+        self.corners[self.face2num['U'], 2, 2] = 7
+        self.corners[self.face2num['L'], 0, 0] = 8
+        self.corners[self.face2num['L'], 0, 2] = 9
+        self.corners[self.face2num['L'], 2, 0] = 10
+        self.corners[self.face2num['L'], 2, 2] = 11
+        self.corners[self.face2num['F'], 0, 0] = 12
+        self.corners[self.face2num['F'], 0, 2] = 13
+        self.corners[self.face2num['F'], 2, 0] = 14
+        self.corners[self.face2num['F'], 2, 2] = 15
+        self.corners[self.face2num['R'], 0, 0] = 16
+        self.corners[self.face2num['R'], 0, 2] = 17
+        self.corners[self.face2num['R'], 2, 0] = 18
+        self.corners[self.face2num['R'], 2, 2] = 19
+        self.corners[self.face2num['D'], 0, 0] = 20
+        self.corners[self.face2num['D'], 0, 2] = 21
+        self.corners[self.face2num['D'], 2, 0] = 22
+        self.corners[self.face2num['D'], 2, 2] = 23
+
+    def rotate_array(self, arr, face, clockwise):
+        f = arr
         f2n = self.face2num
         
         if face == 'F':
@@ -144,6 +273,10 @@ class Cube():
                 f[f2n['B'], 0, :] = np.flip(f[f2n['L'], 2, :])
                 f[f2n['L'], 2, :] = front
     
+    def rotate(self, face, clockwise):
+        self.rotate_array(self.facelets, face, clockwise)
+        self.rotate_array(self.tracked, face, clockwise)
+    
     def rotate_code(self, rotation_code):
         face = rotation_code[0]
         if face not in self.face2num:
@@ -177,38 +310,45 @@ class Cube():
         
         return n
     
-    def rotate_code_get_reward(self, rotation_code):
-        cur_correct_facelets = self.num_correct_facelets()
-        cur_correct_sides = self.num_correct_sides()
-        
-        self.rotate_code(rotation_code)
-        
-        next_correct_facelets = self.num_correct_facelets()
-        next_correct_sides = self.num_correct_sides()
-        
-        if self.is_solved():
-            # print("REACHED SOLVED STATE")
-            return 100
+    def rotate_code_get_reward(self, rotation_code, reward_type = 'dqn'):
+        if reward_type == 'dqn':
+            cur_correct_facelets = self.num_correct_facelets()
+            cur_correct_sides = self.num_correct_sides()
             
-        reward = -0.1
-        reward += next_correct_facelets - cur_correct_facelets
-        reward += (next_correct_sides - cur_correct_sides) * 10
-        
-        
+            self.rotate_code(rotation_code)
+            
+            next_correct_facelets = self.num_correct_facelets()
+            next_correct_sides = self.num_correct_sides()
+            
+            if self.is_solved():
+                return 100
+                
+            reward = -0.1
+            reward += next_correct_facelets - cur_correct_facelets
+            reward += (next_correct_sides - cur_correct_sides) * 10
+        elif reward_type == 'deepcube':
+            self.rotate_code(rotation_code)
+            reward = 1 if self.is_solved() else -1
+
         return reward
     
-    def scramble(self, num_rotations = 20):
+    def get_scramble(self, num_rotations):
         prev_face = None
         scramble_str = ''
-        for i in range(num_rotations):
+        for _ in range(num_rotations):
             while True:
                 face = np.random.choice(list(self.face2num.keys()))
                 if face != prev_face:
                     break
             rotation_type = np.random.choice(['', '\'', '2'])
-            self.rotate_code(face + rotation_type)
             scramble_str += face + rotation_type + ' '
             prev_face = face
+        return scramble_str.strip()
+    
+    def scramble(self, num_rotations = 20):
+        scramble_str = self.get_scramble(num_rotations)
+        for rot_code in scramble_str.split(' '):
+            self.rotate_code(rot_code)
         return scramble_str
     
     def is_solved_state(self, state):
