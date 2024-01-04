@@ -3,8 +3,9 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import matplotlib.animation as animation
 import numpy as np
 
-class Cube():
-    def __init__(self, facelet_size = 2):
+
+class Cube:
+    def __init__(self, facelet_size=2):
         # Cube faces are represented as 3x3 matrices with the orange face in the front,
         # the white face on top, and the cube unraveled as follows:
         #   B
@@ -13,39 +14,25 @@ class Cube():
         #   Y
         # Facelets in a face are then numbered in row-major order starting from the top left
         # in the unraveled format
-        
+
         self.facelet_size = facelet_size
-        self.face2num = {
-            'F': 0,
-            'B': 1,
-            'R': 2,
-            'L': 3,
-            'U': 4,
-            'D': 5
-        }
-        self.num2face = {f : n for n, f in self.face2num.items()}
-        
-        self.face2col = {
-            'F': 'G',
-            'B': 'B',
-            'R': 'R',
-            'L': 'O',
-            'U': 'W',
-            'D': 'Y'
-        }
-        self.num2col = {n : self.face2col[self.num2face[n]] for n in self.num2face}
-        
+        self.face2num = {"F": 0, "B": 1, "R": 2, "L": 3, "U": 4, "D": 5}
+        self.num2face = {f: n for n, f in self.face2num.items()}
+
+        self.face2col = {"F": "G", "B": "B", "R": "R", "L": "O", "U": "W", "D": "Y"}
+        self.num2col = {n: self.face2col[self.num2face[n]] for n in self.num2face}
+
         self.col2plt = {
-            'W': 'white',
-            'Y': 'yellow',
-            'G': 'green',
-            'B': 'blue',
-            'R': 'red',
-            'O': 'orange'
+            "W": "white",
+            "Y": "yellow",
+            "G": "green",
+            "B": "blue",
+            "R": "red",
+            "O": "orange",
         }
-        
-        self.facelets = np.zeros((6, 3, 3), dtype = np.int8)
-        
+
+        self.facelets = np.zeros((6, 3, 3), dtype=np.int8)
+
         for i in range(6):
             self.facelets[i] = i
         
@@ -181,90 +168,90 @@ class Cube():
     def rotate_array(self, arr, face, clockwise):
         f = arr
         f2n = self.face2num
-        
-        if face == 'F':
+
+        if face == "F":
             if clockwise:
-                f[f2n['F']] = np.rot90(f[f2n['F']], 3)
-                up = np.copy(f[f2n['U'], 2, :])
-                f[f2n['U'], 2, :] = np.flip(f[f2n['L'], :, 2])
-                f[f2n['L'], :, 2] = f[f2n['D'], 0, :]
-                f[f2n['D'], 0, :] = np.flip(f[f2n['R'], :, 0])
-                f[f2n['R'], :, 0] = up
+                f[f2n["F"]] = np.rot90(f[f2n["F"]], 3)
+                up = np.copy(f[f2n["U"], 2, :])
+                f[f2n["U"], 2, :] = np.flip(f[f2n["L"], :, 2])
+                f[f2n["L"], :, 2] = f[f2n["D"], 0, :]
+                f[f2n["D"], 0, :] = np.flip(f[f2n["R"], :, 0])
+                f[f2n["R"], :, 0] = up
             else:
-                f[f2n['F']] = np.rot90(f[f2n['F']], 1)
-                up = np.copy(f[f2n['U'], 2, :])
-                f[f2n['U'], 2, :] = f[f2n['R'], :, 0]
-                f[f2n['R'], :, 0] = np.flip(f[f2n['D'], 0, :])
-                f[f2n['D'], 0, :] = f[f2n['L'], :, 2]
-                f[f2n['L'], :, 2] = np.flip(up)
-        elif face == 'B':
+                f[f2n["F"]] = np.rot90(f[f2n["F"]], 1)
+                up = np.copy(f[f2n["U"], 2, :])
+                f[f2n["U"], 2, :] = f[f2n["R"], :, 0]
+                f[f2n["R"], :, 0] = np.flip(f[f2n["D"], 0, :])
+                f[f2n["D"], 0, :] = f[f2n["L"], :, 2]
+                f[f2n["L"], :, 2] = np.flip(up)
+        elif face == "B":
             if clockwise:
-                f[f2n['B']] = np.rot90(f[f2n['B']], 3)
-                up = np.copy(f[f2n['U'], 0, :])
-                f[f2n['U'], 0, :] = f[f2n['R'], :, 2]
-                f[f2n['R'], :, 2] = np.flip(f[f2n['D'], 2, :])
-                f[f2n['D'], 2, :] = f[f2n['L'], :, 0]
-                f[f2n['L'], :, 0] = np.flip(up)
+                f[f2n["B"]] = np.rot90(f[f2n["B"]], 3)
+                up = np.copy(f[f2n["U"], 0, :])
+                f[f2n["U"], 0, :] = f[f2n["R"], :, 2]
+                f[f2n["R"], :, 2] = np.flip(f[f2n["D"], 2, :])
+                f[f2n["D"], 2, :] = f[f2n["L"], :, 0]
+                f[f2n["L"], :, 0] = np.flip(up)
             else:
-                f[f2n['B']] = np.rot90(f[f2n['B']], 1)
-                up = np.copy(f[f2n['U'], 0, :])
-                f[f2n['U'], 0, :] = np.flip(f[f2n['L'], :, 0])
-                f[f2n['L'], :, 0] = f[f2n['D'], 2, :]
-                f[f2n['D'], 2, :] = np.flip(f[f2n['R'], :, 2])
-                f[f2n['R'], :, 2] = up
-        elif face == 'R':
+                f[f2n["B"]] = np.rot90(f[f2n["B"]], 1)
+                up = np.copy(f[f2n["U"], 0, :])
+                f[f2n["U"], 0, :] = np.flip(f[f2n["L"], :, 0])
+                f[f2n["L"], :, 0] = f[f2n["D"], 2, :]
+                f[f2n["D"], 2, :] = np.flip(f[f2n["R"], :, 2])
+                f[f2n["R"], :, 2] = up
+        elif face == "R":
             if clockwise:
-                f[f2n['R']] = np.rot90(f[f2n['R']], 3)
-                up = np.copy(f[f2n['U'], :, 2])
-                f[f2n['U'], :, 2] = f[f2n['F'], :, 2]
-                f[f2n['F'], :, 2] = f[f2n['D'], :, 2]
-                f[f2n['D'], :, 2] = f[f2n['B'], :, 2]
-                f[f2n['B'], :, 2] = up
+                f[f2n["R"]] = np.rot90(f[f2n["R"]], 3)
+                up = np.copy(f[f2n["U"], :, 2])
+                f[f2n["U"], :, 2] = f[f2n["F"], :, 2]
+                f[f2n["F"], :, 2] = f[f2n["D"], :, 2]
+                f[f2n["D"], :, 2] = f[f2n["B"], :, 2]
+                f[f2n["B"], :, 2] = up
             else:
-                f[f2n['R']] = np.rot90(f[f2n['R']], 1)
-                up = np.copy(f[f2n['U'], :, 2])
-                f[f2n['U'], :, 2] = f[f2n['B'], :, 2]
-                f[f2n['B'], :, 2] = f[f2n['D'], :, 2]
-                f[f2n['D'], :, 2] = f[f2n['F'], :, 2]
-                f[f2n['F'], :, 2] = up
-        elif face == 'L':
+                f[f2n["R"]] = np.rot90(f[f2n["R"]], 1)
+                up = np.copy(f[f2n["U"], :, 2])
+                f[f2n["U"], :, 2] = f[f2n["B"], :, 2]
+                f[f2n["B"], :, 2] = f[f2n["D"], :, 2]
+                f[f2n["D"], :, 2] = f[f2n["F"], :, 2]
+                f[f2n["F"], :, 2] = up
+        elif face == "L":
             if clockwise:
-                f[f2n['L']] = np.rot90(f[f2n['L']], 3)
-                up = np.copy(f[f2n['U'], :, 0])
-                f[f2n['U'], :, 0] = f[f2n['B'], :, 0]
-                f[f2n['B'], :, 0] = f[f2n['D'], :, 0]
-                f[f2n['D'], :, 0] = f[f2n['F'], :, 0]
-                f[f2n['F'], :, 0] = up
+                f[f2n["L"]] = np.rot90(f[f2n["L"]], 3)
+                up = np.copy(f[f2n["U"], :, 0])
+                f[f2n["U"], :, 0] = f[f2n["B"], :, 0]
+                f[f2n["B"], :, 0] = f[f2n["D"], :, 0]
+                f[f2n["D"], :, 0] = f[f2n["F"], :, 0]
+                f[f2n["F"], :, 0] = up
             else:
-                f[f2n['L']] = np.rot90(f[f2n['L']], 1)
-                up = np.copy(f[f2n['U'], :, 0])
-                f[f2n['U'], :, 0] = f[f2n['F'], :, 0]
-                f[f2n['F'], :, 0] = f[f2n['D'], :, 0]
-                f[f2n['D'], :, 0] = f[f2n['B'], :, 0]
-                f[f2n['B'], :, 0] = up
-        elif face == 'U':
+                f[f2n["L"]] = np.rot90(f[f2n["L"]], 1)
+                up = np.copy(f[f2n["U"], :, 0])
+                f[f2n["U"], :, 0] = f[f2n["F"], :, 0]
+                f[f2n["F"], :, 0] = f[f2n["D"], :, 0]
+                f[f2n["D"], :, 0] = f[f2n["B"], :, 0]
+                f[f2n["B"], :, 0] = up
+        elif face == "U":
             if clockwise:
-                f[f2n['U']] = np.rot90(f[f2n['U']], 3)
-                front = np.copy(f[f2n['F'], 0, :])
-                f[f2n['F'], 0, :] = f[f2n['R'], 0, :]
-                f[f2n['R'], 0, :] = np.flip(f[f2n['B'], 2, :])
-                f[f2n['B'], 2, :] = np.flip(f[f2n['L'], 0, :])
-                f[f2n['L'], 0, :] = front
+                f[f2n["U"]] = np.rot90(f[f2n["U"]], 3)
+                front = np.copy(f[f2n["F"], 0, :])
+                f[f2n["F"], 0, :] = f[f2n["R"], 0, :]
+                f[f2n["R"], 0, :] = np.flip(f[f2n["B"], 2, :])
+                f[f2n["B"], 2, :] = np.flip(f[f2n["L"], 0, :])
+                f[f2n["L"], 0, :] = front
             else:
-                f[f2n['U']] = np.rot90(f[f2n['U']], 1)
-                front = np.copy(f[f2n['F'], 0, :])
-                f[f2n['F'], 0, :] = f[f2n['L'], 0, :]
-                f[f2n['L'], 0, :] = np.flip(f[f2n['B'], 2, :])
-                f[f2n['B'], 2, :] = np.flip(f[f2n['R'], 0, :])
-                f[f2n['R'], 0, :] = front
-        elif face == 'D':
+                f[f2n["U"]] = np.rot90(f[f2n["U"]], 1)
+                front = np.copy(f[f2n["F"], 0, :])
+                f[f2n["F"], 0, :] = f[f2n["L"], 0, :]
+                f[f2n["L"], 0, :] = np.flip(f[f2n["B"], 2, :])
+                f[f2n["B"], 2, :] = np.flip(f[f2n["R"], 0, :])
+                f[f2n["R"], 0, :] = front
+        elif face == "D":
             if clockwise:
-                f[f2n['D']] = np.rot90(f[f2n['D']], 3)
-                front = np.copy(f[f2n['F'], 2, :])
-                f[f2n['F'], 2, :] = f[f2n['L'], 2, :]
-                f[f2n['L'], 2, :] = np.flip(f[f2n['B'], 0, :])
-                f[f2n['B'], 0, :] = np.flip(f[f2n['R'], 2, :])
-                f[f2n['R'], 2, :] = front
+                f[f2n["D"]] = np.rot90(f[f2n["D"]], 3)
+                front = np.copy(f[f2n["F"], 2, :])
+                f[f2n["F"], 2, :] = f[f2n["L"], 2, :]
+                f[f2n["L"], 2, :] = np.flip(f[f2n["B"], 0, :])
+                f[f2n["B"], 0, :] = np.flip(f[f2n["R"], 2, :])
+                f[f2n["R"], 2, :] = front
             else:
                 f[f2n['D']] = np.rot90(f[f2n['D']], 1)
                 front = np.copy(f[f2n['F'], 2, :])
@@ -280,17 +267,17 @@ class Cube():
     def rotate_code(self, rotation_code):
         face = rotation_code[0]
         if face not in self.face2num:
-            raise ValueError('Invalid rotation format')
-        
+            raise ValueError("Invalid rotation format")
+
         clockwise = True
         double_rotation = False
         if len(rotation_code) != 1:
-            if len(rotation_code) > 2 or rotation_code[1] not in ['\'', '2']:
-                raise ValueError('Invalid rotation format')
+            if len(rotation_code) > 2 or rotation_code[1] not in ["'", "2"]:
+                raise ValueError("Invalid rotation format")
 
-            clockwise = rotation_code[1] != '\''
-            double_rotation = rotation_code[1] == '2'
-        
+            clockwise = rotation_code[1] != "'"
+            double_rotation = rotation_code[1] == "2"
+
         self.rotate(face, clockwise)
         if double_rotation:
             self.rotate(face, clockwise)
@@ -301,17 +288,17 @@ class Cube():
     
     def num_correct_facelets(self):
         n = -6
-        
+
         for f in range(6):
             n += np.sum(self.facelets[f] == f)
-        
+
         return n
-    
+
     def num_correct_sides(self):
         n = 0
         for f in range(6):
             n += (self.facelets[f] == f).all()
-        
+
         return n
     
     def rotate_code_get_reward(self, rotation_code, reward_type = 'dqn'):
@@ -353,13 +340,13 @@ class Cube():
         scramble_str = self.get_scramble(num_rotations)
         self.rotate_code_sequence(scramble_str)
         return scramble_str
-    
+
     def is_solved_state(self, state):
         for f in range(6):
             if not np.all(state[f] == f):
                 return False
         return True
-    
+
     def is_solved(self):
         return self.is_solved_state(self.facelets)
     
@@ -367,35 +354,35 @@ class Cube():
         fx = np.array([-self.facelet_size / 2, self.facelet_size / 2, self.facelet_size / 2, -self.facelet_size / 2])
         fy = np.array([-self.facelet_size / 2, -self.facelet_size / 2, self.facelet_size / 2, self.facelet_size / 2])
         fz = np.array([0, 0, 0, 0])
-        
-        for f in range(6):            
+
+        for f in range(6):
             for i in range(3):
                 for j in range(3):
-                    if self.num2face[f] == 'F':
+                    if self.num2face[f] == "F":
                         draw_x = fz + self.facelet_size * 1.5
                         draw_y = fx + self.facelet_size * (j - 1)
                         draw_z = fy - self.facelet_size * (i - 1)
-                    elif self.num2face[f] == 'B':
+                    elif self.num2face[f] == "B":
                         draw_x = fz - self.facelet_size * 1.5
                         draw_y = fx + self.facelet_size * (j - 1)
                         draw_z = fy + self.facelet_size * (i - 1)
-                    elif self.num2face[f] == 'R':
+                    elif self.num2face[f] == "R":
                         draw_x = fx - self.facelet_size * (j - 1)
                         draw_y = fz + self.facelet_size * 1.5
                         draw_z = fy - self.facelet_size * (i - 1)
-                    elif self.num2face[f] == 'L':
+                    elif self.num2face[f] == "L":
                         draw_x = fx + self.facelet_size * (j - 1)
-                        draw_y = fz -self.facelet_size * 1.5
+                        draw_y = fz - self.facelet_size * 1.5
                         draw_z = fy - self.facelet_size * (i - 1)
-                    elif self.num2face[f] == 'U':
+                    elif self.num2face[f] == "U":
                         draw_x = fy + self.facelet_size * (i - 1)
                         draw_y = fx + self.facelet_size * (j - 1)
                         draw_z = fz + self.facelet_size * 1.5
-                    elif self.num2face[f] == 'D':
+                    elif self.num2face[f] == "D":
                         draw_x = fy - self.facelet_size * (i - 1)
                         draw_y = fx + self.facelet_size * (j - 1)
-                        draw_z = fz -self.facelet_size * 1.5
-                    
+                        draw_z = fz - self.facelet_size * 1.5
+
                     verts = [list(zip(draw_x, draw_y, draw_z))]
                     ax.add_collection3d(Poly3DCollection(verts, facecolors = self.col2plt[self.num2col[self.facelets[f, i, j]]]))
         
@@ -414,24 +401,9 @@ class Cube():
         self.draw_to_axis(ax)
         
         plt.show()
-    
-    def animate(self, rotation_str, interval = 0.5, block = True):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection = '3d')
-        
-        def update(rot_code):
-            if rot_code != '':
-                self.rotate_code(rot_code)
-            ax.clear()
-            self.draw_to_axis(ax)
-        
-        ani = animation.FuncAnimation(fig, update, frames = [''] + rotation_str.split(' '), interval = interval * 1000, repeat = False,)
-        plt.show(block = block)
-        if not block:
-            plt.pause(interval * (len(rotation_str.split(' ')) + 2))
-            plt.close(fig)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Test
     rotation_str = input()
     cube = Cube()
