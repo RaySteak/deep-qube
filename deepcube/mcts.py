@@ -2,54 +2,143 @@ import sys
 sys.path.append('../')
 
 import torch
+import numpy as np
 from cube import Cube
 from value_policy_net import ValuePolicyNet
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-vp_net = ValuePolicyNet()
+
+c = 5
+nu = 0.0
+num_iter = 10_000
+
+
+action_encode = {
+    'F': 0,
+    'F\'': 1,
+    'B' : 2,
+    'B\'': 3,
+    'L' : 4,
+    'L\'': 5,
+    'R' : 6,
+    'R\'': 7,
+    'U' : 8,
+    'U\'': 9,
+    'D' : 10,
+    'D\'': 11,
+}
+action_decode = {encoding : action for action, encoding in action_encode.items()}
+
+vp_net = ValuePolicyNet().to(device)
 vp_net.eval()
 
 cube = Cube()
+edges = cube.edges
+corners = cube.corners
 
 num_moves = int(input("Input number of scramble moves: "))
-cube.scramble(num_moves)
+scramble_str = cube.scramble(num_moves)
+print("Scramble: ", scramble_str)
+
+def encode_state(tracked, edges, corners):
+    encoded = np.zeros((20, 24))
+    for f in range(6):
+        for i in range(3):
+            for j in range(3):
+                is_edge = (i == 1) or (j == 1)
+                if tracked[f, i, j] != -1:
+                    pos_value = edges[f, i, j] if is_edge else corners[f, i, j]
+                    encoded[tracked[f, i, j], pos_value] = 1
+    
+    return encoded
 
 
 class TreeNode:
-    def __init__(self, state, agent_index, parent=None, action=None, reward=0):
-        self.state = state
+    def __init__(self, facelets, tracked, parent=None, action=None):
+        self.facelets = facelets
+        self.tracked = tracked
+        
         self.parent = parent
         self.action = action
-        self.reward = reward
-        self.agent_index = agent_index
+
+        self.W = np.zeros(12)
+        self.N = np.zeros(12)
+        self.L = np.zeros(12)
+        
+        self.visited = False
         self.children = []
-        self.visited_actions = []
-        self.visits = 0
-        self.value = 0
 
     def add_child(self, child):
         self.children.append(child)
 
-    def update(self, reward):
-        self.reward += reward
-        self.visits += 1
-        self.value = self.reward / self.visits
-
-def get_not_fully_expanded(node):
-    pass
-
-def rollout(node):
-    pass
-
-def backpropagate(node, reward):
-    pass
+def mcts_simulate(node):
+    if not node.visited:
+        with torch.no_grad():
+            node.V, node.P = vp_net(torch.Tensor(encode_state(node.tracked, edges, corners)).to(device)[None, :])
+            node.V = node.V.item()
+            node.P = torch.nn.Softmax(dim = 1)(node.P)[0].cpu().numpy()
+        
+        node.visited = True  
+        for a in range(12):
+            cube.facelets = np.copy(node.facelets)
+            cube.tracked = np.copy(node.tracked)
+            cube.rotate_code(action_decode[a])
+            
+            node.add_child(TreeNode(cube.facelets, cube.tracked, node, a))
+        return node
+    
+    U = c * node.P * np.sqrt(np.sum(node.N)) / (1 + node.N)
+    Q = node.W - node.L
+    
+    A = np.argmax(Q + U)
+    
+    unvisited_node = mcts_simulate(node.children[A])
+    
+    node.W[A] = np.max([unvisited_node.V, node.W[A]])
+    node.N[A] += 1
+    node.L -= nu
+    
+    return unvisited_node
 
 def mcts(root, num_it):
     while num_it > 0:
-        unvisited_node = get_not_fully_expanded(root)
-        reward = rollout(unvisited_node)
-        backpropagate(unvisited_node, reward)
+        mcts_simulate(root)
         
         num_it -= 1
     
     return root
+
+def bfs(root):
+    queue = [root]
+    while len(queue) > 0:
+        node = queue.pop(0)
+        
+        cube.facelets = node.facelets
+        if cube.is_solved():
+            return node
+        
+        queue.extend(node.children)
+    return None
+
+root = TreeNode(np.copy(cube.facelets), np.copy(cube.tracked))
+mcts(root, num_iter)
+solved_node = bfs(root)
+
+if solved_node is None:
+    print("No solution found")
+else:
+    solution = []
+    while solved_node.parent is not None:
+        solution.append(solved_node.action)
+        solved_node = solved_node.parent
+    solution = ' '.join([action_decode[a] for a in reversed(solution)])
+    print("Solution: ", solution)
+    
+    cube = Cube()
+    cube.rotate_code_sequence(scramble_str)
+    
+    cube.draw()
+    for a in solution.split(' '):
+        cube.rotate_code(a)
+        cube.draw()

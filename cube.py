@@ -295,6 +295,10 @@ class Cube():
         if double_rotation:
             self.rotate(face, clockwise)
     
+    def rotate_code_sequence(self, seq):
+        for rot_code in seq.split(' '):
+            self.rotate_code(rot_code)
+    
     def num_correct_facelets(self):
         n = -6
         
@@ -347,8 +351,7 @@ class Cube():
     
     def scramble(self, num_rotations = 20):
         scramble_str = self.get_scramble(num_rotations)
-        for rot_code in scramble_str.split(' '):
-            self.rotate_code(rot_code)
+        self.rotate_code_sequence(scramble_str)
         return scramble_str
     
     def is_solved_state(self, state):
