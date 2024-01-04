@@ -3,8 +3,9 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import matplotlib.animation as animation
 import numpy as np
 
+
 class Cube():
-    def __init__(self, facelet_size = 2):
+    def __init__(self, facelet_size=2):
         # Cube faces are represented as 3x3 matrices with the orange face in the front,
         # the white face on top, and the cube unraveled as follows:
         #   B
@@ -13,7 +14,7 @@ class Cube():
         #   Y
         # Facelets in a face are then numbered in row-major order starting from the top left
         # in the unraveled format
-        
+
         self.facelet_size = facelet_size
         self.face2num = {
             'F': 0,
@@ -23,8 +24,8 @@ class Cube():
             'U': 4,
             'D': 5
         }
-        self.num2face = {f : n for n, f in self.face2num.items()}
-        
+        self.num2face = {f: n for n, f in self.face2num.items()}
+
         self.face2col = {
             'F': 'G',
             'B': 'B',
@@ -33,8 +34,9 @@ class Cube():
             'U': 'W',
             'D': 'Y'
         }
-        self.num2col = {n : self.face2col[self.num2face[n]] for n in self.num2face}
-        
+        self.num2col = {n: self.face2col[self.num2face[n]]
+                        for n in self.num2face}
+
         self.col2plt = {
             'W': 'white',
             'Y': 'yellow',
@@ -43,12 +45,12 @@ class Cube():
             'R': 'red',
             'O': 'orange'
         }
-        
-        self.facelets = np.zeros((6, 3, 3), dtype = np.int8)
-        
+
+        self.facelets = np.zeros((6, 3, 3), dtype=np.int8)
+
         for i in range(6):
             self.facelets[i] = i
-        
+
         # A more compact format like in the DeepCube paper is also employed.
         # Therefore, the tracked stickers are selected as follows (marked with numbers):
         #
@@ -57,18 +59,18 @@ class Cube():
         #           -- -- --
         #
         #           2  3  4
-        #           5  -- 6 
+        #           5  -- 6
         #           7  8  9
         #
         # -- -- --  -- -- --  -- -- --
         # -- -- --  10 -- 11  -- -- --
         # -- -- --  -- -- --  -- -- --
-        #        
+        #
         #           12 13 14
         #           15 -- 16
         #           17 18 19
         #
-        self.tracked = np.zeros((6, 3, 3), dtype = np.int8) - 1
+        self.tracked = np.zeros((6, 3, 3), dtype=np.int8) - 1
         self.tracked[self.face2num['B'], 1, 0] = 0
         self.tracked[self.face2num['B'], 1, 2] = 1
         self.tracked[self.face2num['U'], 0, 0] = 2
@@ -103,12 +105,12 @@ class Cube():
         # -- 8  --  -- 12 --  -- 16 --
         # 9  -- 10  13 -- 14  17 -- 18
         # -- 11 --  -- 15 --  -- 19 --
-        #        
+        #
         #           -- 20 --
         #           21 -- 22
         #           -- 23 --
         #
-        self.edges = np.zeros((6, 3, 3), dtype = np.int8) - 1
+        self.edges = np.zeros((6, 3, 3), dtype=np.int8) - 1
         self.edges[self.face2num['B'], 0, 1] = 0
         self.edges[self.face2num['B'], 1, 0] = 1
         self.edges[self.face2num['B'], 1, 2] = 2
@@ -147,12 +149,12 @@ class Cube():
         # 8  -- 9   12 -- 13  16 -- 17
         # -- -- --  -- -- --  -- -- --
         # 10 -- 11  14 -- 15  18 -- 19
-        #        
+        #
         #           20 -- 21
         #           -- -- --
         #           22 -- 23
         #
-        self.corners = np.zeros((6, 3, 3), dtype = np.int8)
+        self.corners = np.zeros((6, 3, 3), dtype=np.int8)
         self.corners[self.face2num['B'], 0, 0] = 0
         self.corners[self.face2num['B'], 0, 2] = 1
         self.corners[self.face2num['B'], 2, 0] = 2
@@ -181,7 +183,7 @@ class Cube():
     def rotate_array(self, arr, face, clockwise):
         f = arr
         f2n = self.face2num
-        
+
         if face == 'F':
             if clockwise:
                 f[f2n['F']] = np.rot90(f[f2n['F']], 3)
@@ -272,16 +274,16 @@ class Cube():
                 f[f2n['R'], 2, :] = np.flip(f[f2n['B'], 0, :])
                 f[f2n['B'], 0, :] = np.flip(f[f2n['L'], 2, :])
                 f[f2n['L'], 2, :] = front
-    
+
     def rotate(self, face, clockwise):
         self.rotate_array(self.facelets, face, clockwise)
         self.rotate_array(self.tracked, face, clockwise)
-    
+
     def rotate_code(self, rotation_code):
         face = rotation_code[0]
         if face not in self.face2num:
             raise ValueError('Invalid rotation format')
-        
+
         clockwise = True
         double_rotation = False
         if len(rotation_code) != 1:
@@ -290,43 +292,43 @@ class Cube():
 
             clockwise = rotation_code[1] != '\''
             double_rotation = rotation_code[1] == '2'
-        
+
         self.rotate(face, clockwise)
         if double_rotation:
             self.rotate(face, clockwise)
-    
+
     def rotate_code_sequence(self, seq):
         for rot_code in seq.split(' '):
             self.rotate_code(rot_code)
-    
+
     def num_correct_facelets(self):
         n = -6
-        
+
         for f in range(6):
             n += np.sum(self.facelets[f] == f)
-        
+
         return n
-    
+
     def num_correct_sides(self):
         n = 0
         for f in range(6):
             n += (self.facelets[f] == f).all()
-        
+
         return n
-    
-    def rotate_code_get_reward(self, rotation_code, reward_type = 'dqn'):
+
+    def rotate_code_get_reward(self, rotation_code, reward_type='dqn'):
         if reward_type == 'dqn':
             cur_correct_facelets = self.num_correct_facelets()
             cur_correct_sides = self.num_correct_sides()
-            
+
             self.rotate_code(rotation_code)
-            
+
             next_correct_facelets = self.num_correct_facelets()
             next_correct_sides = self.num_correct_sides()
-            
+
             if self.is_solved():
                 return 100
-                
+
             reward = -0.1
             reward += next_correct_facelets - cur_correct_facelets
             reward += (next_correct_sides - cur_correct_sides) * 10
@@ -335,7 +337,7 @@ class Cube():
             reward = 1 if self.is_solved() else -1
 
         return reward
-    
+
     def get_scramble(self, num_rotations):
         prev_face = None
         scramble_str = ''
@@ -348,27 +350,29 @@ class Cube():
             scramble_str += face + rotation_type + ' '
             prev_face = face
         return scramble_str.strip()
-    
-    def scramble(self, num_rotations = 20):
+
+    def scramble(self, num_rotations=20):
         scramble_str = self.get_scramble(num_rotations)
         self.rotate_code_sequence(scramble_str)
         return scramble_str
-    
+
     def is_solved_state(self, state):
         for f in range(6):
             if not np.all(state[f] == f):
                 return False
         return True
-    
+
     def is_solved(self):
         return self.is_solved_state(self.facelets)
-    
+
     def draw_to_axis(self, ax):
-        fx = np.array([-self.facelet_size / 2, self.facelet_size / 2, self.facelet_size / 2, -self.facelet_size / 2])
-        fy = np.array([-self.facelet_size / 2, -self.facelet_size / 2, self.facelet_size / 2, self.facelet_size / 2])
+        fx = np.array([-self.facelet_size / 2, self.facelet_size / 2,
+                      self.facelet_size / 2, -self.facelet_size / 2])
+        fy = np.array([-self.facelet_size / 2, -self.facelet_size /
+                      2, self.facelet_size / 2, self.facelet_size / 2])
         fz = np.array([0, 0, 0, 0])
-        
-        for f in range(6):            
+
+        for f in range(6):
             for i in range(3):
                 for j in range(3):
                     if self.num2face[f] == 'F':
@@ -385,7 +389,7 @@ class Cube():
                         draw_z = fy - self.facelet_size * (i - 1)
                     elif self.num2face[f] == 'L':
                         draw_x = fx + self.facelet_size * (j - 1)
-                        draw_y = fz -self.facelet_size * 1.5
+                        draw_y = fz - self.facelet_size * 1.5
                         draw_z = fy - self.facelet_size * (i - 1)
                     elif self.num2face[f] == 'U':
                         draw_x = fy + self.facelet_size * (i - 1)
@@ -394,11 +398,12 @@ class Cube():
                     elif self.num2face[f] == 'D':
                         draw_x = fy - self.facelet_size * (i - 1)
                         draw_y = fx + self.facelet_size * (j - 1)
-                        draw_z = fz -self.facelet_size * 1.5
-                    
+                        draw_z = fz - self.facelet_size * 1.5
+
                     verts = [list(zip(draw_x, draw_y, draw_z))]
-                    ax.add_collection3d(Poly3DCollection(verts, facecolors = self.col2plt[self.num2col[self.facelets[f, i, j]]]))
-        
+                    ax.add_collection3d(Poly3DCollection(
+                        verts, facecolors=self.col2plt[self.num2col[self.facelets[f, i, j]]]))
+
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
@@ -406,36 +411,38 @@ class Cube():
         ax.set_xlim(-2 * self.facelet_size, 2 * self.facelet_size)
         ax.set_ylim(-2 * self.facelet_size, 2 * self.facelet_size)
         ax.set_zlim(-2 * self.facelet_size, 2 * self.facelet_size)
-    
+
     def show(self):
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection = '3d')
-        
+        ax = fig.add_subplot(111, projection='3d')
+
         self.draw_to_axis(ax)
-        
+
         plt.show()
-    
-    def animate(self, rotation_str, interval = 0.5, block = True):
+
+    def animate(self, rotation_str, interval=0.5, block=True):
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection = '3d')
-        
+        ax = fig.add_subplot(111, projection='3d')
+
         def update(rot_code):
             if rot_code != '':
                 self.rotate_code(rot_code)
             ax.clear()
             self.draw_to_axis(ax)
-        
-        ani = animation.FuncAnimation(fig, update, frames = [''] + rotation_str.split(' '), interval = interval * 1000, repeat = False,)
-        plt.show(block = block)
+
+        ani = animation.FuncAnimation(fig, update, frames=[
+                                      ''] + rotation_str.split(' '), interval=interval * 1000, repeat=False,)
+        plt.show(block=block)
         if not block:
             plt.pause(interval * (len(rotation_str.split(' ')) + 2))
             plt.close(fig)
+
 
 if __name__ == '__main__':
     # Test
     rotation_str = input()
     cube = Cube()
-        
+
     if rotation_str != '':
         for rot_code in rotation_str.split(' '):
             cube.rotate_code(rot_code)
