@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-import matplotlib.collections as collections
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import matplotlib.animation as animation
 import numpy as np
 
 class Cube():
@@ -362,11 +362,8 @@ class Cube():
     
     def is_solved(self):
         return self.is_solved_state(self.facelets)
-        
-    def draw(self):
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection = '3d')
-        
+    
+    def draw_to_axis(self, ax):
         fx = np.array([-self.facelet_size / 2, self.facelet_size / 2, self.facelet_size / 2, -self.facelet_size / 2])
         fy = np.array([-self.facelet_size / 2, -self.facelet_size / 2, self.facelet_size / 2, self.facelet_size / 2])
         fz = np.array([0, 0, 0, 0])
@@ -401,25 +398,48 @@ class Cube():
                     
                     verts = [list(zip(draw_x, draw_y, draw_z))]
                     ax.add_collection3d(Poly3DCollection(verts, facecolors = self.col2plt[self.num2col[self.facelets[f, i, j]]]))
-                    
+        
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
 
-        ax.set_xlim(-4,4)
-        ax.set_ylim(-4,4)
-        ax.set_zlim(-4,4)
+        ax.set_xlim(-2 * self.facelet_size, 2 * self.facelet_size)
+        ax.set_ylim(-2 * self.facelet_size, 2 * self.facelet_size)
+        ax.set_zlim(-2 * self.facelet_size, 2 * self.facelet_size)
+    
+    def show(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection = '3d')
+        
+        self.draw_to_axis(ax)
         
         plt.show()
+    
+    def animate(self, rotation_str, interval = 0.5, block = True):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection = '3d')
+        
+        def update(rot_code):
+            if rot_code != '':
+                self.rotate_code(rot_code)
+            ax.clear()
+            self.draw_to_axis(ax)
+        
+        ani = animation.FuncAnimation(fig, update, frames = [''] + rotation_str.split(' '), interval = interval * 1000, repeat = False,)
+        plt.show(block = block)
+        if not block:
+            plt.pause(interval * (len(rotation_str.split(' ')) + 2))
+            plt.close(fig)
 
 if __name__ == '__main__':
     # Test
     rotation_str = input()
     cube = Cube()
-
+        
     if rotation_str != '':
         for rot_code in rotation_str.split(' '):
             cube.rotate_code(rot_code)
+        cube.show()
     else:
-        cube.scramble(20)
-    cube.draw()
+        scramble = cube.get_scramble(20)
+        cube.animate(scramble)

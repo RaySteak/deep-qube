@@ -5,6 +5,8 @@ import torch
 import numpy as np
 from cube import Cube
 from value_policy_net import ValuePolicyNet
+from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -38,8 +40,9 @@ edges = cube.edges
 corners = cube.corners
 
 num_moves = int(input("Input number of scramble moves: "))
-scramble_str = cube.scramble(num_moves)
+scramble_str = cube.get_scramble(num_moves)
 print("Scramble: ", scramble_str)
+cube.animate(scramble_str, interval = 0.1, block = False)
 
 def encode_state(tracked, edges, corners):
     encoded = np.zeros((20, 24))
@@ -102,7 +105,7 @@ def mcts_simulate(node):
     return unvisited_node
 
 def mcts(root, num_it):
-    while num_it > 0:
+    for _ in tqdm(range(num_it)):
         mcts_simulate(root)
         
         num_it -= 1
@@ -122,12 +125,16 @@ def bfs(root):
     return None
 
 root = TreeNode(np.copy(cube.facelets), np.copy(cube.tracked))
+print("Solving...")
 mcts(root, num_iter)
 solved_node = bfs(root)
 
 if solved_node is None:
     print("No solution found")
 else:
+    cube = Cube()
+    cube.rotate_code_sequence(scramble_str)
+    
     solution = []
     while solved_node.parent is not None:
         solution.append(solved_node.action)
@@ -135,10 +142,4 @@ else:
     solution = ' '.join([action_decode[a] for a in reversed(solution)])
     print("Solution: ", solution)
     
-    cube = Cube()
-    cube.rotate_code_sequence(scramble_str)
-    
-    cube.draw()
-    for a in solution.split(' '):
-        cube.rotate_code(a)
-        cube.draw()
+    cube.animate(solution, 0.5)
