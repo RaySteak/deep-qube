@@ -355,7 +355,7 @@ class Cube():
                 if use_quarter_turn_metric and (prev_face != face or (prev_face == face and rotation_type == prev_rotation_type)):
                     break
             scramble_str += face + rotation_type + ' '
-            prev_pev_face = prev_face
+            prev_prev_face = prev_face
             prev_face = face
             prev_rotation_type = rotation_type
         return scramble_str.strip()
@@ -458,4 +458,5 @@ if __name__ == '__main__':
         cube.show()
     else:
         scramble = cube.get_scramble(20)
+        print(scramble)
         cube.animate(scramble)
