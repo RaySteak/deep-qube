@@ -1,11 +1,12 @@
+import sys
+sys.path.append('../')
+
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from value_policy_net import ValuePolicyNet
 from cube import Cube
 import numpy as np
 import torch
-import sys
-sys.path.append('../')
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

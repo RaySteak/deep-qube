@@ -338,21 +338,30 @@ class Cube():
 
         return reward
 
-    def get_scramble(self, num_rotations):
+    def get_scramble(self, num_rotations, use_quarter_turn_metric = True):
+        prev_prev_face = None
         prev_face = None
+        prev_rotation_type = None
         scramble_str = ''
         for _ in range(num_rotations):
             while True:
                 face = np.random.choice(list(self.face2num.keys()))
-                if face != prev_face:
+                if not use_quarter_turn_metric and face != prev_face:
                     break
-            rotation_type = np.random.choice(['', '\'', '2'])
+                if use_quarter_turn_metric and (prev_face != prev_prev_face or (prev_face == prev_prev_face and face != prev_face)):
+                    break
+            while True:
+                rotation_type = np.random.choice(['', '\''] if use_quarter_turn_metric else ['', '\'', '2'])
+                if use_quarter_turn_metric and (prev_face != face or (prev_face == face and rotation_type == prev_rotation_type)):
+                    break
             scramble_str += face + rotation_type + ' '
+            prev_pev_face = prev_face
             prev_face = face
+            prev_rotation_type = rotation_type
         return scramble_str.strip()
 
-    def scramble(self, num_rotations=20):
-        scramble_str = self.get_scramble(num_rotations)
+    def scramble(self, num_rotations=20, use_quarter_turn_metric = True):
+        scramble_str = self.get_scramble(num_rotations, use_quarter_turn_metric)
         self.rotate_code_sequence(scramble_str)
         return scramble_str
 
