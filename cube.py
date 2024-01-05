@@ -110,31 +110,31 @@ class Cube():
         #           21 -- 22
         #           -- 23 --
         #
-        self.edges = np.zeros((6, 3, 3), dtype=np.int8) - 1
-        self.edges[self.face2num['B'], 0, 1] = 0
-        self.edges[self.face2num['B'], 1, 0] = 1
-        self.edges[self.face2num['B'], 1, 2] = 2
-        self.edges[self.face2num['B'], 2, 1] = 3
-        self.edges[self.face2num['U'], 0, 1] = 4
-        self.edges[self.face2num['U'], 1, 0] = 5
-        self.edges[self.face2num['U'], 1, 2] = 6
-        self.edges[self.face2num['U'], 2, 1] = 7
-        self.edges[self.face2num['L'], 0, 1] = 8
-        self.edges[self.face2num['L'], 1, 0] = 9
-        self.edges[self.face2num['L'], 1, 2] = 10
-        self.edges[self.face2num['L'], 2, 1] = 11
-        self.edges[self.face2num['F'], 0, 1] = 12
-        self.edges[self.face2num['F'], 1, 0] = 13
-        self.edges[self.face2num['F'], 1, 2] = 14
-        self.edges[self.face2num['F'], 2, 1] = 15
-        self.edges[self.face2num['R'], 0, 1] = 16
-        self.edges[self.face2num['R'], 1, 0] = 17
-        self.edges[self.face2num['R'], 1, 2] = 18
-        self.edges[self.face2num['R'], 2, 1] = 19
-        self.edges[self.face2num['D'], 0, 1] = 20
-        self.edges[self.face2num['D'], 1, 0] = 21
-        self.edges[self.face2num['D'], 1, 2] = 22
-        self.edges[self.face2num['D'], 2, 1] = 23
+        self.edges_corners = np.zeros((6, 3, 3), dtype=np.int8)
+        self.edges_corners[self.face2num['B'], 0, 1] = 0
+        self.edges_corners[self.face2num['B'], 1, 0] = 1
+        self.edges_corners[self.face2num['B'], 1, 2] = 2
+        self.edges_corners[self.face2num['B'], 2, 1] = 3
+        self.edges_corners[self.face2num['U'], 0, 1] = 4
+        self.edges_corners[self.face2num['U'], 1, 0] = 5
+        self.edges_corners[self.face2num['U'], 1, 2] = 6
+        self.edges_corners[self.face2num['U'], 2, 1] = 7
+        self.edges_corners[self.face2num['L'], 0, 1] = 8
+        self.edges_corners[self.face2num['L'], 1, 0] = 9
+        self.edges_corners[self.face2num['L'], 1, 2] = 10
+        self.edges_corners[self.face2num['L'], 2, 1] = 11
+        self.edges_corners[self.face2num['F'], 0, 1] = 12
+        self.edges_corners[self.face2num['F'], 1, 0] = 13
+        self.edges_corners[self.face2num['F'], 1, 2] = 14
+        self.edges_corners[self.face2num['F'], 2, 1] = 15
+        self.edges_corners[self.face2num['R'], 0, 1] = 16
+        self.edges_corners[self.face2num['R'], 1, 0] = 17
+        self.edges_corners[self.face2num['R'], 1, 2] = 18
+        self.edges_corners[self.face2num['R'], 2, 1] = 19
+        self.edges_corners[self.face2num['D'], 0, 1] = 20
+        self.edges_corners[self.face2num['D'], 1, 0] = 21
+        self.edges_corners[self.face2num['D'], 1, 2] = 22
+        self.edges_corners[self.face2num['D'], 2, 1] = 23
 
         # The corner locations are numbered as follows:
         #
@@ -154,31 +154,40 @@ class Cube():
         #           -- -- --
         #           22 -- 23
         #
-        self.corners = np.zeros((6, 3, 3), dtype=np.int8)
-        self.corners[self.face2num['B'], 0, 0] = 0
-        self.corners[self.face2num['B'], 0, 2] = 1
-        self.corners[self.face2num['B'], 2, 0] = 2
-        self.corners[self.face2num['B'], 2, 2] = 3
-        self.corners[self.face2num['U'], 0, 0] = 4
-        self.corners[self.face2num['U'], 0, 2] = 5
-        self.corners[self.face2num['U'], 2, 0] = 6
-        self.corners[self.face2num['U'], 2, 2] = 7
-        self.corners[self.face2num['L'], 0, 0] = 8
-        self.corners[self.face2num['L'], 0, 2] = 9
-        self.corners[self.face2num['L'], 2, 0] = 10
-        self.corners[self.face2num['L'], 2, 2] = 11
-        self.corners[self.face2num['F'], 0, 0] = 12
-        self.corners[self.face2num['F'], 0, 2] = 13
-        self.corners[self.face2num['F'], 2, 0] = 14
-        self.corners[self.face2num['F'], 2, 2] = 15
-        self.corners[self.face2num['R'], 0, 0] = 16
-        self.corners[self.face2num['R'], 0, 2] = 17
-        self.corners[self.face2num['R'], 2, 0] = 18
-        self.corners[self.face2num['R'], 2, 2] = 19
-        self.corners[self.face2num['D'], 0, 0] = 20
-        self.corners[self.face2num['D'], 0, 2] = 21
-        self.corners[self.face2num['D'], 2, 0] = 22
-        self.corners[self.face2num['D'], 2, 2] = 23
+        self.edges_corners[self.face2num['B'], 0, 0] = 0
+        self.edges_corners[self.face2num['B'], 0, 2] = 1
+        self.edges_corners[self.face2num['B'], 2, 0] = 2
+        self.edges_corners[self.face2num['B'], 2, 2] = 3
+        self.edges_corners[self.face2num['U'], 0, 0] = 4
+        self.edges_corners[self.face2num['U'], 0, 2] = 5
+        self.edges_corners[self.face2num['U'], 2, 0] = 6
+        self.edges_corners[self.face2num['U'], 2, 2] = 7
+        self.edges_corners[self.face2num['L'], 0, 0] = 8
+        self.edges_corners[self.face2num['L'], 0, 2] = 9
+        self.edges_corners[self.face2num['L'], 2, 0] = 10
+        self.edges_corners[self.face2num['L'], 2, 2] = 11
+        self.edges_corners[self.face2num['F'], 0, 0] = 12
+        self.edges_corners[self.face2num['F'], 0, 2] = 13
+        self.edges_corners[self.face2num['F'], 2, 0] = 14
+        self.edges_corners[self.face2num['F'], 2, 2] = 15
+        self.edges_corners[self.face2num['R'], 0, 0] = 16
+        self.edges_corners[self.face2num['R'], 0, 2] = 17
+        self.edges_corners[self.face2num['R'], 2, 0] = 18
+        self.edges_corners[self.face2num['R'], 2, 2] = 19
+        self.edges_corners[self.face2num['D'], 0, 0] = 20
+        self.edges_corners[self.face2num['D'], 0, 2] = 21
+        self.edges_corners[self.face2num['D'], 2, 0] = 22
+        self.edges_corners[self.face2num['D'], 2, 2] = 23
+    
+    @staticmethod
+    def encode_state(tracked, edges_corners):
+        encoded = np.zeros((20, 24))
+        for f in range(6):
+            for i in range(3):
+                for j in range(3):
+                    if tracked[f, i, j] != -1:
+                        encoded[tracked[f, i, j], edges_corners[f, i, j]] = 1
+        return encoded
 
     def rotate_array(self, arr, face, clockwise):
         f = arr

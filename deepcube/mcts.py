@@ -13,8 +13,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 c = 5
-nu = 0.0
-num_iter = 10_000
+nu = 0.1
+num_iter = 100_000
 
 
 action_encode = {
@@ -38,26 +38,12 @@ vp_net = ValuePolicyNet().to(device)
 vp_net.eval()
 
 cube = Cube()
-edges = cube.edges
-corners = cube.corners
+edges_corners = cube.edges_corners
 
 num_moves = int(input("Input number of scramble moves: "))
 scramble_str = cube.get_scramble(num_moves)
 print("Scramble: ", scramble_str)
 cube.animate(scramble_str, interval=0.1, block=False)
-
-
-def encode_state(tracked, edges, corners):
-    encoded = np.zeros((20, 24))
-    for f in range(6):
-        for i in range(3):
-            for j in range(3):
-                is_edge = (i == 1) or (j == 1)
-                if tracked[f, i, j] != -1:
-                    pos_value = edges[f, i, j] if is_edge else corners[f, i, j]
-                    encoded[tracked[f, i, j], pos_value] = 1
-
-    return encoded
 
 
 class TreeNode:
@@ -82,8 +68,8 @@ class TreeNode:
 def mcts_simulate(node):
     if not node.visited:
         with torch.no_grad():
-            node.V, node.P = vp_net(torch.Tensor(encode_state(
-                node.tracked, edges, corners)).to(device)[None, :])
+            node.V, node.P = vp_net(torch.Tensor(Cube.encode_state(
+                node.tracked, edges_corners)).to(device)[None, :])
             node.V = node.V.item()
             node.P = torch.nn.Softmax(dim=1)(node.P)[0].cpu().numpy()
 
