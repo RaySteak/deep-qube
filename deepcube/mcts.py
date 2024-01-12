@@ -8,13 +8,14 @@ from cube import Cube
 import numpy as np
 import torch
 
+sys.setrecursionlimit(100_000)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 c = 5
 nu = 0.1
-num_iter = 100_000
+num_iter = 5_000
 
 
 action_encode = {
@@ -34,7 +35,8 @@ action_encode = {
 action_decode = {encoding: action for action,
                  encoding in action_encode.items()}
 
-vp_net = ValuePolicyNet().to(device)
+vp_net = ValuePolicyNet(value_only = False).to(device)
+vp_net.load_state_dict(torch.load('vp_net.pt'))
 vp_net.eval()
 
 cube = Cube()
