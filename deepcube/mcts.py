@@ -47,8 +47,7 @@ cube.animate(scramble_str, interval=0.1, block=False)
 
 
 class TreeNode:
-    def __init__(self, facelets, tracked, parent=None, action=None):
-        self.facelets = facelets
+    def __init__(self, tracked, parent=None, action=None):
         self.tracked = tracked
 
         self.parent = parent
@@ -75,11 +74,10 @@ def mcts_simulate(node):
 
         node.visited = True
         for a in range(12):
-            cube.facelets = np.copy(node.facelets)
             cube.tracked = np.copy(node.tracked)
             cube.rotate_code(action_decode[a])
 
-            node.add_child(TreeNode(cube.facelets, cube.tracked, node, a))
+            node.add_child(TreeNode(cube.tracked, node, a))
         return node
 
     U = c * node.P * np.sqrt(np.sum(node.N)) / (1 + node.N)
@@ -110,15 +108,15 @@ def bfs(root):
     while len(queue) > 0:
         node = queue.pop(0)
 
-        cube.facelets = node.facelets
-        if cube.is_solved():
+        cube.tracked = node.tracked
+        if cube.is_solved(use_tracked = True):
             return node
 
         queue.extend(node.children)
     return None
 
 
-root = TreeNode(np.copy(cube.facelets), np.copy(cube.tracked))
+root = TreeNode(np.copy(cube.tracked))
 print("Solving...")
 mcts(root, num_iter)
 solved_node = bfs(root)

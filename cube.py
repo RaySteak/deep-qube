@@ -91,6 +91,7 @@ class Cube():
         self.tracked[self.face2num['D'], 2, 0] = 17
         self.tracked[self.face2num['D'], 2, 1] = 18
         self.tracked[self.face2num['D'], 2, 2] = 19
+        self.tracked_solved = np.copy(self.tracked)
 
         # The edge locations are numbered as follows:
         #
@@ -373,6 +374,9 @@ class Cube():
         scramble_str = self.get_scramble(num_rotations, use_quarter_turn_metric)
         self.rotate_code_sequence(scramble_str)
         return scramble_str
+    
+    def is_solved_tracked(self, tracked):
+        return (tracked == self.tracked_solved).all()
 
     def is_solved_state(self, state):
         for f in range(6):
@@ -380,7 +384,9 @@ class Cube():
                 return False
         return True
 
-    def is_solved(self):
+    def is_solved(self, use_tracked = False):
+        if use_tracked:
+            return self.is_solved_tracked(self.tracked)
         return self.is_solved_state(self.facelets)
 
     def draw_to_axis(self, ax):
