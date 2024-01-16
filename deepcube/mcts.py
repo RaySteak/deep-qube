@@ -8,6 +8,7 @@ from cube import Cube
 import numpy as np
 import torch
 
+# Just in case
 sys.setrecursionlimit(100_000)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -15,7 +16,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 c = 5
 nu = 0.1
-num_iter = 5_000
+num_iter = 10_000
 
 
 action_encode = {
@@ -66,7 +67,7 @@ class TreeNode:
         self.children.append(child)
 
 
-def mcts_simulate(node):
+def mcts_simulate(node, depth = 0):
     if not node.visited:
         with torch.no_grad():
             node.V, node.P = vp_net(torch.Tensor(Cube.encode_state(
@@ -80,14 +81,17 @@ def mcts_simulate(node):
             cube.rotate_code(action_decode[a])
 
             node.add_child(TreeNode(cube.tracked, node, a))
+        # print("Depth: ", depth)
         return node
 
     U = c * node.P * np.sqrt(np.sum(node.N)) / (1 + node.N)
     Q = node.W - node.L
 
+    # print("Actions ", Q + U)
     A = np.argmax(Q + U)
+    # print("Action: ", action_decode[A])
 
-    unvisited_node = mcts_simulate(node.children[A])
+    unvisited_node = mcts_simulate(node.children[A], depth + 1)
 
     node.W[A] = np.max([unvisited_node.V, node.W[A]])
     node.N[A] += 1
