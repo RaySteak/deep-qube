@@ -48,7 +48,7 @@ class Node():
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 lam = 1
-iterations = 10_000
+iterations = 100_000
 
 action_encode = {
     'F': 0,
@@ -88,7 +88,9 @@ def heuristic(tracked):
         return v_net(torch.Tensor(Cube.encode_state(tracked, edges_corners)).to(device)[None, :]).item()
 
 q = PriorityQueue()
+vis = {}
 
+vis[cube.tracked.tobytes()] = heuristic(cube.tracked)
 q.push(Node(np.copy(cube.tracked), 0, None, None), heuristic(cube.tracked))
 
 solved_node = None
@@ -109,8 +111,9 @@ for i in tqdm(range(iterations)):
 
         total_cost = lam * path_cost + heuristic(cube.tracked)
 
-        # Push the successor into the priority queue with its estimated total cost
-        q.push(Node(cube.tracked, path_cost, cur_node, a), total_cost)
+        if cube.tracked.tobytes() not in vis or vis[cube.tracked.tobytes()] > total_cost:
+            vis[cube.tracked.tobytes()] = total_cost
+            q.push(Node(cube.tracked, path_cost, cur_node, a), total_cost)
     if solved_node is not None:
         break
 
