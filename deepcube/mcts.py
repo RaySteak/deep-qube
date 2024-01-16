@@ -72,10 +72,10 @@ class MCTS():
 
             node.visited = True
             for a in range(12):
-                cube.tracked = np.copy(node.tracked)
-                cube.rotate_code(self.action_decode[a])
+                self.cube.tracked = np.copy(node.tracked)
+                self.cube.rotate_code(self.action_decode[a])
 
-                node.add_child(TreeNode(cube.tracked, node, a))
+                node.add_child(TreeNode(self.cube.tracked, node, a))
             return node
 
         U = self.c * node.P * np.sqrt(np.sum(node.N)) / (1 + node.N)
@@ -91,8 +91,8 @@ class MCTS():
 
         return unvisited_node
 
-    def mcts(self, root, num_iter, show_progress):
-        for _ in tqdm(range(num_iter), disable = not show_progress):
+    def mcts(self, root, num_iter):
+        for _ in tqdm(range(num_iter), disable = not self.show_progress):
             self.mcts_simulate(root)
         return root
     
@@ -101,8 +101,8 @@ class MCTS():
         while len(queue) > 0:
             node = queue.pop(0)
 
-            cube.tracked = node.tracked
-            if cube.is_solved(use_tracked = True):
+            self.cube.tracked = node.tracked
+            if self.cube.is_solved(use_tracked = True):
                 return node
 
             queue.extend(node.children)
@@ -113,7 +113,7 @@ class MCTS():
             num_iter = self.num_iter
         
         root = TreeNode(np.copy(cube.tracked))
-        root = self.mcts(root, num_iter, self.show_progress)
+        root = self.mcts(root, num_iter)
         solved_node = self.bfs(root)
         
         if solved_node is None:
