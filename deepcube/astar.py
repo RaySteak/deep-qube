@@ -124,6 +124,9 @@ class Astar():
         root = Node(np.copy(cube.tracked), 0, None, None)
         solved_node = self.astar(root, num_iter)
         
+        if solved_node is None:
+            return None
+        
         solution = []
         while solved_node.parent is not None:
             solution.append(solved_node.action)
