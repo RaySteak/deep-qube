@@ -4,6 +4,7 @@ sys.path.append('../')
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from value_policy_net import ValuePolicyNet
+from resnet_model import ResnetModel
 from cube import Cube
 import numpy as np
 import torch
@@ -48,7 +49,7 @@ class Node():
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class Astar():
-    def __init__(self, lam = 1, num_iter = 10_000, show_progress = False):
+    def __init__(self, lam = 1, num_iter = 10_000, network_type = 'normal', show_progress = False):
         self.lam = lam
         self.num_iter = num_iter
         self.show_progress = show_progress
@@ -70,8 +71,8 @@ class Astar():
         self.action_decode = {encoding: action for action,
                         encoding in self.action_encode.items()}
 
-        self.v_net = ValuePolicyNet(value_only = True).to(device)
-        self.v_net.load_state_dict(torch.load('v_net.pt'))
+        self.v_net = ValuePolicyNet(value_only = True).to(device) if network_type == 'normal' else ResnetModel(20, 24, 5000, 1000, 4, 1, True).to(device)
+        self.v_net.load_state_dict(torch.load('v_net_normal.pt' if network_type == 'normal' else 'v_net_resnet.pt'))
         self.v_net.eval()
 
         self.cube = Cube()
@@ -137,7 +138,7 @@ class Astar():
         return solution
         
 if __name__ == '__main__':
-    astar = Astar(num_iter = 10_000, show_progress = True)
+    astar = Astar(num_iter = 10_000, show_progress = True, network_type = 'resnet')
     
     cube = Cube()
     num_moves = int(input("Input number of scramble moves: "))
