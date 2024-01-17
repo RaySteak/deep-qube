@@ -153,4 +153,4 @@ if __name__ == '__main__':
         print("No solution found")
     else:
         print("Solution: ", solution)
-        cube.animate(solution, 0.5)
+        cube.animate(solution, 3.0)
