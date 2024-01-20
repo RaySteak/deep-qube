@@ -93,7 +93,8 @@ class Astar():
         q.push(root, self.heuristic(self.cube.tracked))
 
         solved_node = None
-        for _ in tqdm(range(num_iter), disable = not self.show_progress):
+        steps_taken = None
+        for i in tqdm(range(num_iter), disable = not self.show_progress):
             cur_node = q.pop()
             
             for a in self.action_encode:
@@ -106,6 +107,7 @@ class Astar():
                 
                 if self.cube.is_solved(use_tracked = True):
                     solved_node = Node(self.cube.tracked, path_cost, cur_node, a)
+                    steps_taken = i + 1
                     break
 
                 total_cost = self.lam * path_cost + self.heuristic(self.cube.tracked)
@@ -116,17 +118,17 @@ class Astar():
             if solved_node is not None:
                 break
         
-        return solved_node
+        return solved_node, steps_taken
 
-    def solve(self, cube, num_iter = None):
+    def solve(self, cube, num_iter = None, return_steps_taken = False):
         if num_iter is None:
             num_iter = self.num_iter
         
         root = Node(np.copy(cube.tracked), 0, None, None)
-        solved_node = self.astar(root, num_iter)
+        solved_node, steps_taken = self.astar(root, num_iter)
         
         if solved_node is None:
-            return None
+            return None if not return_steps_taken else (None, None)
         
         solution = []
         while solved_node.parent is not None:
@@ -135,15 +137,20 @@ class Astar():
             
         solution = ' '.join([a for a in reversed(solution)])
         
-        return solution
+        return solution if not return_steps_taken else (solution, steps_taken)
         
 if __name__ == '__main__':
-    astar = Astar(num_iter = 10_000, show_progress = True, network_type = 'resnet')
+    astar = Astar(lam = 1.0, num_iter = 100_000, show_progress = True, network_type = 'resnet')
     
     cube = Cube()
-    num_moves = int(input("Input number of scramble moves: "))
-    scramble_str = cube.get_scramble(num_moves)
-    print("Scramble: ", scramble_str)
+    
+    user_input = input("Input number of scramble moves (press enter to input own scramble): ")
+    if user_input == '':
+        scramble_str = input("Input your own scramble: ")
+    else:
+        num_moves = int(user_input)
+        scramble_str = cube.get_scramble(num_moves)
+        print("Scramble: ", scramble_str)
     cube.animate(scramble_str, interval=0.1, block=False)
 
     print("Solving...")

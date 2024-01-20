@@ -1,0 +1,8 @@
+F U R U' R' F' - A*, resnet, lam = 1, (k, l, M, e) = (15, 100, 10, 1) : 32508 steps taken.
+F R U R' U' F' - A*, resnet, lam = 1, (k, l, M, e) = (15, 100, 10, 1) : 35112 steps taken.
+
+F U R U' R' F' - A*, normal, lam = 1, (k, l, M, e) = (15, 100, 100, 1) : 11345 steps taken.
+F R U R' U' F' - A*, normal, lam = 1, (k, l, M, e) = (15, 100, 100, 1) : 11384 steps taken.
+
+F U R U' R' F' - A*, resnet, lam = 1, (k, l, M, e) = (15, 100, 100, 1) : - steps taken.
+F R U R' U' F' - A*, resnet, lam = 1, (k, l, M, e) = (15, 100, 100, 1) : 17891 steps taken.
